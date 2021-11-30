@@ -8,6 +8,7 @@ const urlParse = require("url-parse");
 const queryParse = require("query-string");
 const bodyParser = require("body-parser");
 const axios = require("axios");
+const get = require("lodash/get");
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -19,9 +20,9 @@ app.use(bodyParser.json());
 app.get("/getURLTing", (req, res) => {
   const oauth2Client = new google.auth.OAuth2(
     // clientId
-    "443144746825-h4008kcfhk8appnb2oedd8s4b0upklba.apps.googleusercontent.com",
+    "726635518103-c1mn3auqoahbskvqn8imfl4d77jo68ff.apps.googleusercontent.com",
     // client secret
-    "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",
+    "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",
     "http://localhost:6868/caloriesBurned"
     // "https://google.com"
   );
@@ -33,8 +34,8 @@ app.get("/getURLTing", (req, res) => {
     access_type: "offline",
     scope: scopes,
     state: JSON.stringify({
-    //   callbackUrl: req.body.callbackUrl,
-    //   userID: req.body.userid,
+      //   callbackUrl: req.body.callbackUrl,
+      //   userID: req.body.userid,
     }),
   });
 
@@ -44,32 +45,36 @@ app.get("/getURLTing", (req, res) => {
     res.send({ url });
   });
 
-  console.log("url: ", url);
-  console.log("req.url 1: ", req.url);
+  //   console.log("url: ", url);
+  //   console.log("req.url 1: ", req.url);
 });
 
 app.get("/caloriesBurned", async (req, res) => {
-  console.log("req.url: ", req.url);
-  const queryURL = new urlParse(req.url);
-  console.log("queryURL: ", queryURL);
-  const code = queryParse.parse(queryURL.query).code;
+//   const queryURL = new urlParse(req.url);
+//   const code = queryParse.parse(queryURL.query).code;
 
-  const oauth2Client = new google.auth.OAuth2(
-    // clientId
-    "443144746825-h4008kcfhk8appnb2oedd8s4b0upklba.apps.googleusercontent.com",
-    // client secret
-    "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",
-    "http://localhost:6868/caloriesBurned",
-    // "https://google.com"
-  );
+//   const oauth2Client = new google.auth.OAuth2(
+//     // clientId
+//     "726635518103-c1mn3auqoahbskvqn8imfl4d77jo68ff.apps.googleusercontent.com",
+//     // client secret
+//     "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",
+//     "http://localhost:6868/caloriesBurned"
+//     // "https://google.com"
+//   );
 
-  const tokens = await oauth2Client.getToken(code);
+//   const tokens = await oauth2Client.getToken(code);
+//   console.log("result: ", tokens.tokens.access_token);
+
+    const token = get(req, "body", "");
+    console.log("accessToken: ", token.access_token);
 
   try {
     const result = await axios({
       method: "POST",
       headers: {
-        authorization: "Bearer " + tokens.tokens.access_token,
+        // authorization: "Bearer " + tokens.tokens.access_token,
+        // authorization: "Bearer " + "ya29.a0ARrdaM8yEog1X6iRTk2cqoJoImUNidyBN4OSrXrRWNEfbLEzmbA8a6HUpHmH2adKdd_bmztAnPFaivpotQPghcmmLGrzKn7gjEHDXsJQ-DwPJKya0QyJkG3Z2gAuOl_loGA21uT8FMK8BO2gnZH56hHwqorp",
+        authorization: "Bearer " + token.access_token,
       },
       "Content-Type": "application/json",
       url: `https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate`,
@@ -82,11 +87,13 @@ app.get("/caloriesBurned", async (req, res) => {
           },
         ],
         bucketByTime: { durationMillis: 86400000 },
-        startTimeMillis: 1637859610000,
-        endTimeMillis: 1638176933227,
+        startTimeMillis: 1636477210000,
+        endTimeMillis: 1638239326798,
       },
     });
 
+    // console.log("result: ", result);
+    // res.send(result.data);
     res.send(result.data);
   } catch (error) {
     console.log("error: ", error);
